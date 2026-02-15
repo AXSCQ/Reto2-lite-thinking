@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.23" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Reto2_Architecture.Application\Reto2_Architecture.Application.csproj" />
+    <ProjectReference Include="..\Reto2_Architecture.Domain\Reto2_Architecture.Domain.csproj" />
+    <ProjectReference Include="..\Reto2_Architecture.Infrastructure\Reto2_Architecture.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

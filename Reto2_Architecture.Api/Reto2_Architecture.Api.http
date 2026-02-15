@@ -1,0 +1,6 @@
+@Reto2_Architecture.Api_HostAddress = http://localhost:5158
+
+GET {{Reto2_Architecture.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
