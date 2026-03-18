@@ -1,36 +1,31 @@
-Reto 2: Arquitectura, Calidad de Código y Diseño en Capas
+# Microservicio de Gestión de Órdenes (Reto 2 y 3)
 
-Descripción General
-Este proyecto es la solución al Reto 2 del Módulo 2. El objetivo principal fue construir una API en .NET desde cero aplicando los principios de Clean Architecture y una introducción práctica a Domain-Driven Design (DDD). 
+## Descripción General
+Este proyecto consiste en un microservicio básico para la gestión de órdenes de compra, diseñado originalmente para demostrar los principios de Clean Architecture y evolucionado en esta fase hacia un entorno de contenedores y orquestación distribuida. La aplicación permite el registro de pedidos y la validación de estados de pago, simulando un flujo de negocio real donde cada paso está protegido por reglas arquitectónicas.
 
-En lugar de hacer un sistema gigante, me enfoqué en crear un flujo claro y funcional para un solo caso de uso: crear una orden y agregarle un producto, asegurando que cada capa tenga una responsabilidad única y no se mezclen entre sí.
+## Arquitectura en Capas (Base del Reto 2)
+Para garantizar la mantenibilidad y el desacoplamiento total de los componentes, el sistema se divide en cuatro capas estrictas:
+- **Dominio (Domain):** Contiene la lógica central y las entidades de negocio (como `Order`). Es el núcleo del sistema y no tiene ninguna dependencia externa o de frameworks.
+- **Aplicación (Application):** Orquestra los casos de uso, como la creación de órdenes. Define qué es lo que el sistema puede hacer mediante contratos e interfaces.
+- **Infraestructura (Infrastructure):** Implementa los detalles técnicos, como la persistencia de datos y la comunicación con otros servicios mediante HttpClient.
+- **API (Presentación):** Expone los puntos de entrada HTTP mediante Minimal APIs, gestionando la entrada de datos inicial y la configuración del contenedor de dependencias.
 
+## Patrones de Diseño Utilizados
+- **Patrón Repositorio:** Se implementó para mediar entre la capa de dominio y la persistencia física de los datos. Esto permite que la lógica de aplicación trabaje con abstracciones, facilitando cambios futuros en el motor de base de datos sin afectar el núcleo del sistema.
+- **Inyección de Dependencias:** Utilizado para gestionar el ciclo de vida de los objetos y reducir el acoplamiento. Gracias a este patrón, el sistema entrega automáticamente las dependencias necesarias a cada capa, facilitando el mantenimiento y las pruebas unitarias distribuidas.
 
-Explicación de las Capas
+## Contenerización y Orquestación (Novedad del Reto 3)
+La aplicación fue preparada para entornos de nube local mediante los siguientes componentes de infraestructura:
+- **Dockerfile Multi-stage:** Se diseñó un proceso de construcción optimizado que separa la compilación (SDK pesado) de la ejecución (Runtime ligero), reduciendo significativamente el tamaño de la imagen final del servicio.
+- **Docker Compose:** Configurado para orquestar la comunicación entre dos servicios en una red privada: la API de Órdenes y una API secundaria de Pagos. Esto permite validar la resolución de nombres DNS interna de Docker durante el procesamiento de pagos.
+- **Kubernetes (K8s):** Se crearon manifiestos de `deployment.yaml` para gestionar la disponibilidad y replicas del servicio, junto con un `service.yaml` de tipo `NodePort` para exponer la aplicación hacia el host exterior de forma controlada en el puerto 30007.
 
-Para mantener el código ordenado y escalable, dividí la solución en 4 proyectos distintos:
+## Pruebas Unitarias y Reglas de Negocio
+Se implementaron pruebas automáticas utilizando xUnit y Moq para validar las reglas críticas antes del despliegue:
+1. **Validación de Dominio:** Se garantiza mediante tests que toda nueva orden inicie estrictamente en estado "Creado".
+2. **Validación de Aplicación:** Se implementó una lógica de protección que impide procesar un pago dos veces sobre la misma orden, lanzando una excepción controlada que fue validada con éxito en las pruebas de integración.
 
-Domain (Dominio):Es el corazón del proyecto. Aquí viven las reglas de negocio, específicamente la clase `Order`. Esta capa es completamente independiente, no sabe nada de bases de datos, ni de internet, ni de frameworks externos.
-Application (Aplicación):Aquí está la lógica de lo que el sistema "sabe hacer". Implementé el caso de uso `CreateOrderUseCase`, que funciona como un coordinador: recibe la instrucción de crear la orden y usa los contratos (interfaces) para mandarla a guardar.
-Infrastructure (Infraestructura):Es la capa que hace el trabajo sucio de hablar con el mundo exterior. Aquí implementé `OrderRepository`,  donde se guardan los datos.
-Api (Presentación): Es la ventanilla de atención. Usé Minimal APIs en .NET para exponer un endpoint `POST /orders` que recibe las peticiones por internet, configura las dependencias y delega el trabajo a la capa de Aplicación.
-
-
-
-Patrones Utilizados y Justificación
-
-Durante el desarrollo apliqué patrones de diseño solo donde realmente aportaban valor para desacoplar el código:
-
-1. Patrón Repository (`IOrderRepository`): Lo usé para crear una frontera estricta entre mi lógica de negocio y la base de datos. Gracias a este contrato, el caso de uso no tiene idea de cómo se guardan los datos. Esto me permite cambiar la forma de guardar la información en el futuro sin tener que tocar ni romper la capa de Aplicación.
-
-2. Inyección de Dependencias (Dependency Injection):
-   Lo configuré en el `Program.cs` usando `AddSingleton` (para mantener la base de datos viva) y `AddScoped` (para los casos de uso). Lo usé para que el sistema le entregue automáticamente las herramientas (como el repositorio) al caso de uso cuando se crea, en lugar de instanciarlas a mano con `new`. Esto hace que el código sea mucho más fácil de probar y mantener.
-
-
-Decisiones Arquitectónicas y Trade-offs Asumidos
-
-Trade-off: Persistencia simulada en memoria en lugar de SQL:
-Como el alcance del reto especificaba que "no se espera persistencia real compleja", decidí no instalar Entity Framework ni levantar un servidor de base de datos. Asumí el trade-off de usar una simple `List<Order>` en memoria dentro de `OrderRepository`. Esto me permitió ahorrar tiempo de configuración y enfocar todo el esfuerzo en lograr una separación de capas perfecta.
-
-Decisión: Evitar un Modelo Anémico (Dominio Rico):
-Al diseñar la entidad `Order`, tomé la decisión de usar `private set` en sus propiedades (como la lista de `Products`). En lugar de dejar la lista abierta para que cualquiera la modifique, implementé un comportamiento específico: la función `AddProduct(string productName)`. Esto protege la integridad de los datos de la orden, evitando que otra capa modifique o borre la lista por accidente.
+## Trade-offs y Decisiones Técnicas
+Como arquitecto de esta solución, se asumieron las siguientes decisiones para equilibrar la agilidad del desarrollo con los requisitos del reto:
+- **Trade-off de Persistencia en Memoria:** Se optó por utilizar colecciones en memoria (`List`) en lugar de un motor SQL relacional real. El beneficio es la velocidad de desarrollo y despliegue en Kubernetes sin la sobrecarga de configurar volúmenes persistentes en esta fase. Se asume que los datos son volátiles al reiniciar el pod.
+- **Trade-off de Alcance Funcional:** El sistema se centra exclusivamente en el flujo ininterrumpido de creación y pago (Happy Path). Se dejaron fuera operaciones secundarias como la actualización o el borrado de registros para enfocar los esfuerzos en la calidad de los patrones y la robustez de la orquestación.

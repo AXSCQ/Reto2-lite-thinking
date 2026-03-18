@@ -1,0 +1,20 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+COPY nuget-packages/ /root/.nuget/packages/
+
+COPY ["Reto3_Payments.Api/Reto3_Payments.Api.csproj", "Reto3_Payments.Api/"]
+
+RUN dotnet restore "Reto3_Payments.Api/Reto3_Payments.Api.csproj" --source /root/.nuget/packages
+COPY . .
+
+WORKDIR /src/Reto3_Payments.Api
+RUN dotnet publish "Reto3_Payments.Api.csproj" -c Release -o /app/publish --source /root/.nuget/packages
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+WORKDIR /app
+COPY --from=build /app/publish .
+
+ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "Reto3_Payments.Api.dll"]

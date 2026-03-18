@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: reto3-api-service
+  labels:
+    app: reto3-api
+spec:
+  type: NodePort
+  selector:
+    app: reto3-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+      nodePort: 30007
