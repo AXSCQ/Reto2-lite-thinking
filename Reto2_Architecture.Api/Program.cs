@@ -11,8 +11,10 @@ builder.Services.AddSwaggerGen();
 
 
 builder.Services.AddSingleton<IOrderRepository, OrderRepository>();
+var rabbitMqHost = builder.Configuration["RabbitMQHost"] ?? "localhost";
+builder.Services.AddSingleton(sp => new EventPublisher(rabbitMqHost));
 builder.Services.AddScoped<CreateOrderUseCase>();
-builder.Services.AddHttpClient(); 
+builder.Services.AddHttpClient();
 
 var app = builder.Build();
 

@@ -7,6 +7,7 @@ COPY ["Reto2_Architecture.Api/Reto2_Architecture.Api.csproj", "Reto2_Architectur
 COPY ["Reto2_Architecture.Application/Reto2_Architecture.Application.csproj", "Reto2_Architecture.Application/"]
 COPY ["Reto2_Architecture.Domain/Reto2_Architecture.Domain.csproj", "Reto2_Architecture.Domain/"]
 COPY ["Reto2_Architecture.Infrastructure/Reto2_Architecture.Infrastructure.csproj", "Reto2_Architecture.Infrastructure/"]
+COPY ["Orders.Contracts/Orders.Contracts.csproj", "Orders.Contracts/"]
 
 RUN dotnet restore "Reto2_Architecture.Api/Reto2_Architecture.Api.csproj" --source /root/.nuget/packages
 COPY . .

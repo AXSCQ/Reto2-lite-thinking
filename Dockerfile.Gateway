@@ -1,0 +1,18 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+COPY nuget-packages/ /root/.nuget/packages/
+COPY ["Orders.Gateway/Orders.Gateway.csproj", "Orders.Gateway/"]
+RUN dotnet restore "Orders.Gateway/Orders.Gateway.csproj" --source /root/.nuget/packages
+
+COPY . .
+WORKDIR "/src/Orders.Gateway"
+RUN dotnet build "Orders.Gateway.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "Orders.Gateway.csproj" -c Release -o /app/publish --source /root/.nuget/packages
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "Orders.Gateway.dll"]

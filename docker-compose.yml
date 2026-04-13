@@ -4,7 +4,16 @@ networks:
 
 services:
 
-  orders-api:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - reto3-network
+
+  api:
     build:
       context: .
       dockerfile: Dockerfile
@@ -15,12 +24,10 @@ services:
       - reto3-network
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - RabbitMQHost=rabbitmq
     restart: on-failure
-    healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:8080/health || exit 1" ]
-      interval: 15s
-      timeout: 5s
-      retries: 3
+    depends_on:
+      - rabbitmq
 
   payments-api:
     build:
@@ -35,4 +42,31 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
     restart: on-failure
     depends_on:
-      - orders-api
+      - api
+
+  gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile.Gateway
+    container_name: orders-gateway
+    ports:
+      - "7190:8080"
+    networks:
+      - reto3-network
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - api
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.Worker
+    container_name: orders-worker
+    networks:
+      - reto3-network
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - RabbitMQHost=rabbitmq
+    depends_on:
+      - rabbitmq

@@ -1,4 +1,4 @@
-# Microservicio de Gestión de Órdenes (Reto 2 y 3)
+# Microservicio de Gestión de Órdenes (Retos 2, 3 y 4)
 
 ## Descripción General
 Este proyecto consiste en un microservicio básico para la gestión de órdenes de compra, diseñado originalmente para demostrar los principios de Clean Architecture y evolucionado en esta fase hacia un entorno de contenedores y orquestación distribuida. La aplicación permite el registro de pedidos y la validación de estados de pago, simulando un flujo de negocio real donde cada paso está protegido por reglas arquitectónicas.
@@ -25,7 +25,15 @@ Se implementaron pruebas automáticas utilizando xUnit y Moq para validar las re
 1. **Validación de Dominio:** Se garantiza mediante tests que toda nueva orden inicie estrictamente en estado "Creado".
 2. **Validación de Aplicación:** Se implementó una lógica de protección que impide procesar un pago dos veces sobre la misma orden, lanzando una excepción controlada que fue validada con éxito en las pruebas de integración.
 
+## Arquitectura de Microservicios y Eventos (Novedad del Reto 4)
+Para evolucionar de una arquitectura monolítica a un sistema distribuido, se agregaron los siguientes componentes y patrones de comunicación:
+- **API Gateway (YARP):** Implementamos YARP (Yet Another Reverse Proxy) como único punto de entrada (`Orders.Gateway`). Este gateway enruta todas las solicitudes REST entrantes (`/orders`) hacia la API correspondiente de backend, ocultando la topología de servicios subyacente.
+- **Comunicación Orientada a Eventos:** Adoptamos un enfoque reactivo utilizando publicador-suscriptor para desacoplar el procesamiento asíncrono.
+- **Message Broker (RabbitMQ):** Una vez que un pedido se consolida exitosamente, `Orders.Api` actúa como publicador (Producer), lanzando el evento `OrderCreated` con un Payload en formato JSON a través de una cola en RabbitMQ.
+- **Worker Service:** Se implementó un microservicio de tipo Worker (`Orders.Worker`) que opera silenciosamente en segundo plano consumiendo (Consumer) la cola de RabbitMQ. Su responsabilidad es reaccionar al evento `OrderCreated` y simular el procesamiento de notificaciones/envíos sin bloquear la respuesta de cara al cliente original.
+
 ## Trade-offs y Decisiones Técnicas
 Como arquitecto de esta solución, se asumieron las siguientes decisiones para equilibrar la agilidad del desarrollo con los requisitos del reto:
 - **Trade-off de Persistencia en Memoria:** Se optó por utilizar colecciones en memoria (`List`) en lugar de un motor SQL relacional real. El beneficio es la velocidad de desarrollo y despliegue en Kubernetes sin la sobrecarga de configurar volúmenes persistentes en esta fase. Se asume que los datos son volátiles al reiniciar el pod.
+- **Consistencia Eventual vs Inmediata (Reto 4):** Para el worker de procesamiento, se decidió usar consistencia eventual mediante RabbitMQ en lugar de peticiones síncronas gRPC/HTTP al Worker. Esto incremente la disponibilidad y la resiliencia temporal de la aplicación principal, aunque impone que las notificaciones puedan experimentar breves latencias.
 - **Trade-off de Alcance Funcional:** El sistema se centra exclusivamente en el flujo ininterrumpido de creación y pago (Happy Path). Se dejaron fuera operaciones secundarias como la actualización o el borrado de registros para enfocar los esfuerzos en la calidad de los patrones y la robustez de la orquestación.

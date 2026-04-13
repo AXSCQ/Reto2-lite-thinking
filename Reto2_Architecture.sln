@@ -17,6 +17,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reto2_Architecture.Applicat
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Reto3_Payments.Api", "Reto3_Payments.Api\Reto3_Payments.Api.csproj", "{EC5AFA4B-5639-4BC9-BAAF-2CC278DBD827}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orders.Gateway", "Orders.Gateway\Orders.Gateway.csproj", "{3E35FBA4-1C54-4F78-A5B6-207953DB3617}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orders.Contracts", "Orders.Contracts\Orders.Contracts.csproj", "{D5980F8A-DBB5-4029-B5D3-CB1975D35E83}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +55,14 @@ Global
 		{EC5AFA4B-5639-4BC9-BAAF-2CC278DBD827}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC5AFA4B-5639-4BC9-BAAF-2CC278DBD827}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC5AFA4B-5639-4BC9-BAAF-2CC278DBD827}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3E35FBA4-1C54-4F78-A5B6-207953DB3617}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3E35FBA4-1C54-4F78-A5B6-207953DB3617}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3E35FBA4-1C54-4F78-A5B6-207953DB3617}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3E35FBA4-1C54-4F78-A5B6-207953DB3617}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5980F8A-DBB5-4029-B5D3-CB1975D35E83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5980F8A-DBB5-4029-B5D3-CB1975D35E83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5980F8A-DBB5-4029-B5D3-CB1975D35E83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5980F8A-DBB5-4029-B5D3-CB1975D35E83}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
